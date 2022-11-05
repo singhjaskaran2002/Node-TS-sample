@@ -1,27 +1,21 @@
-import EXPRESS, { NextFunction, Request, Response, Express } from "express";
+import EXPRESS, { Express } from "express";
+import * as swaggerUI from "swagger-ui-express";
 import routes from "./routes";
 import { initialiseRoutes } from "./utils/route.util";
 
-/**
- * middleware for api's logging with deployment mode
- */
-function apiLogger(req: Request, res: Response, next: NextFunction) {
-  console.log(
-    `[${new Date().toDateString()}, ${new Date().toLocaleTimeString()}] '${
-      req.url
-    }' ${req.method}`
-  );
-  next();
-}
+import { apiLogger } from "./utils/api-logger";
+import { swaggerDocument } from "./utils/swagger";
 
 export async function expressStartup(app: Express) {
-  // serving public folder
-  app.use("/public", EXPRESS.static("public"));
+	// serving public folder
+	app.use("/public", EXPRESS.static("public"));
 
-  // adding middlewares
-  app.use(EXPRESS.json());
-  app.use(apiLogger);
+	app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
-  // initializing REST end-points
-  initialiseRoutes(app, routes);
+	// adding middlewares
+	app.use(EXPRESS.json());
+	app.use(apiLogger);
+
+	// initializing REST end-points
+	initialiseRoutes(app, routes);
 }
